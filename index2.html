@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Birthday!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* General Setup */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden; 
+            color: #4a4a4a;
+        }
+
+        /* Page Layout */
+        .page {
+            display: none;
+            height: 100vh; 
+            width: 100vw;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px 20px;
+            box-sizing: border-box;
+            position: relative;
+            animation: fadeIn 0.8s ease-in-out;
+            overflow: hidden; 
+        }
+        .active { display: flex; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Background Colors */
+        #introPage { background: linear-gradient(135deg, #ff9a9e, #fecfef); } 
+        #page1 { background: linear-gradient(135deg, #ffe6ea, #ffc0cb); } 
+        #pageCake { background: linear-gradient(135deg, #ffe6ea, #ffc0cb); } /* Back to the original bright pink! */
+        #page2 { background: #ffb6c1; } 
+        #page3 { 
+            background-image: url('gift_bg.jpg'); 
+            background-size: cover; 
+            background-position: center; 
+            background-repeat: no-repeat;
+            color: white; 
+        } 
+        #page3::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.3); z-index: 1;
+        }
+        #page3 > * { position: relative; z-index: 10; }
+        #page4 { background: #ffe4e1; } 
+
+        /* Typography */
+        h1 {
+            font-family: 'Caveat', cursive;
+            font-size: 4rem;
+            color: #d6336c;
+            margin: 5px 0;
+            text-shadow: 2px 2px 4px rgba(255, 255, 255, 0.5);
+            z-index: 10;
+        }
+        #page3 h1 { color: #fff; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2); }
+        
+        .mega-title {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 10px;
+        }
+
+        p.message {
+            font-size: 1.2rem; 
+            width: 100%;
+            max-width: 800px; 
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.85); 
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 10;
+            max-height: 40vh; 
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        
+        p.message::-webkit-scrollbar { width: 6px; }
+        p.message::-webkit-scrollbar-thumb { background: #ffb6c1; border-radius: 10px; }
+
+        /* =========================================
+           INTRO PAGE: BURSTING BIRTHDAY BOX
+           ========================================= */
+        .giftbox-wrapper {
+            position: relative; width: 160px; height: 160px; cursor: pointer;
+            z-index: 10; margin-top: 40px;
+        }
+        .giftbox-base {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 110px;
+            background: #ff4d6d; border: 4px solid #fff; border-radius: 5px;
+            box-sizing: border-box; box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .giftbox-base::after {
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 25px; height: 100%; background: #fff;
+        }
+        .giftbox-lid {
+            position: absolute; bottom: 110px; left: -10px; width: 180px; height: 45px;
+            background: #ff4d6d; border: 4px solid #fff; border-radius: 5px;
+            box-sizing: border-box; z-index: 2; transition: transform 0.5s ease-in-out;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        .giftbox-lid::after {
+            content: ''; position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+            width: 25px; height: 100%; background: #fff;
+        }
+        .giftbox-bow {
+            position: absolute; top: -45px; left: 50%; transform: translateX(-50%);
+            font-size: 3.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        }
+        .click-me-text {
+            position: absolute; bottom: -45px; width: 100%; font-weight: bold;
+            color: #d6336c; font-size: 1.3rem; font-family: 'Poppins', sans-serif;
+            animation: pulse 1s infinite;
+        }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .giftbox-wrapper.open .giftbox-lid { transform: translateY(-100px) rotate(15deg); }
+        .giftbox-wrapper.open .click-me-text { opacity: 0; }
+
+        /* BOX CONFETTI BURST */
+        #confetti-container {
+            display: none; position: absolute; top: 50%; left: 50%;
+            width: 1px; height: 1px; z-index: 5; pointer-events: none;
+        }
+        .confetti {
+            position: absolute; width: 12px; height: 25px; border-radius: 2px;
+            animation: burst 1.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+        }
+        @keyframes burst {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) rotate(720deg) scale(0.5); opacity: 0; }
+        }
+
+        /* =========================================
+           AESTHETIC PINK CAKE DESIGN
+           ========================================= */
+        .cake-container {
+            position: relative; width: 300px; height: 250px; margin: 40px auto 20px; z-index: 15;
+            cursor: pointer; transition: transform 0.2s ease;
+        }
+        .cake-container:hover { transform: scale(1.05); }
+        
+        .cake-plate { 
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); 
+            width: 320px; height: 60px; background: #fff; border-radius: 50%; 
+            box-shadow: 0 15px 25px rgba(255, 51, 102, 0.15); border: 4px solid #fecfef; z-index: 1;
+        }
+        
+        .cake-tier-main {
+            position: absolute; bottom: 40px; left: 50%; transform: translateX(-50%);
+            width: 220px; height: 120px; background: #ffb6c1; 
+            border: 3px solid #ff9eb5; border-radius: 10px;
+            box-shadow: inset 0 -10px 0 rgba(255, 255, 255, 0.3);
+            z-index: 2;
+        }
+
+        /* Vintage Piping Details */
+        .piping-top {
+            position: absolute; top: -8px; left: -5px; width: calc(100% + 10px); height: 20px;
+            background-image: radial-gradient(circle, #ff9eb5 50%, transparent 55%);
+            background-size: 20px 20px; background-repeat: repeat-x; z-index: 4;
+        }
+        .piping-bottom {
+            position: absolute; bottom: -8px; left: -5px; width: calc(100% + 10px); height: 20px;
+            background-image: radial-gradient(circle, #ff9eb5 50%, transparent 55%);
+            background-size: 20px 20px; background-repeat: repeat-x; z-index: 4;
+        }
+
+        /* Pretty Bow & Ribbon */
+        .cake-ribbon {
+            position: absolute; top: 50%; left: 0; width: 100%; height: 10px;
+            background: #fff; opacity: 0.8; z-index: 3;
+        }
+        .cake-bow {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 2.5rem; z-index: 4; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+        }
+        
+        /* 1 & 8 Number Candles */
+        .number-candles-wrapper {
+            position: absolute; bottom: 155px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 15px; z-index: 10;
+        }
+        .num-candle {
+            position: relative; font-size: 5rem; font-family: 'Poppins', sans-serif; font-weight: 800;
+            color: #fff; text-shadow: 2px 2px 0px #ff758c, 0px 4px 10px rgba(0,0,0,0.1);
+            line-height: 1; margin: 0 5px;
+        }
+        .num-candle::before {
+            content: ''; position: absolute; top: -5px; left: 50%; transform: translateX(-50%);
+            width: 4px; height: 18px; background: #333; border-radius: 2px; z-index: -1;
+        }
+        
+        .flame {
+            position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+            width: 16px; height: 26px; background: #ffcc00; border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 0 15px #ff9900, 0 0 30px #ffcc00; animation: flicker 0.4s infinite alternate; 
+            transition: opacity 0.5s ease, transform 0.5s ease; z-index: 2;
+        }
+        .flame.blown { opacity: 0; transform: translateX(-50%) translateY(-10px) scale(0); box-shadow: none; }
+        
+        @keyframes flicker { 
+            0% { transform: translateX(-50%) scale(1); opacity: 0.9; } 
+            100% { transform: translateX(-50%) scale(1.15); opacity: 1; } 
+        }
+
+        .mic-instruction {
+            color: #d6336c; font-size: 1rem; margin-top: 10px; font-weight: bold; animation: pulse 1.5s infinite;
+        }
+
+        /* CAKE PAGE CONFETTI SHOWER */
+        .cake-confetti-piece {
+            position: fixed; top: -20px; width: 12px; height: 24px; z-index: 9999; 
+            pointer-events: none; animation: fallConfetti linear forwards; border-radius: 2px;
+        }
+        @keyframes fallConfetti {
+            0% { transform: translateY(0) rotate(0deg) rotateX(0deg); opacity: 1; }
+            100% { transform: translateY(120vh) rotate(720deg) rotateX(360deg); opacity: 0; }
+        }
+
+        /* PAGE 1: DECORATIVE GIFS */
+        .decor-gif { position: absolute; width: 140px; height: auto; z-index: 5; border-radius: 15px; }
+        .gif-tl { top: 20px; left: 20px; }
+        .gif-tr { top: 20px; right: 20px; } 
+        .gif-bl { bottom: 20px; left: 20px; } 
+        .gif-br { bottom: 20px; right: 20px; } 
+        
+        .gif-top-center { width: 160px; margin-bottom: 10px; z-index: 5; }
+        .gif-bottom-center { width: 170px; margin-top: 15px; z-index: 5; }
+
+        /* FLOATING FLOWERS */
+        .floating-flowers {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 100; overflow: hidden;
+        }
+        .flower { position: absolute; font-size: 2.5rem; animation: floatUp linear infinite; opacity: 0.8; bottom: -50px; }
+        @keyframes floatUp {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-120vh) rotate(360deg); }
+        }
+
+        /* PAGE 2: CORNER IMAGES */
+        .corner-photo { 
+            position: absolute; width: 180px; height: 180px; background: #fff; 
+            border: 4px dashed #d6336c; border-radius: 15px; display: flex; align-items: center; justify-content: center;
+            object-fit: cover; box-shadow: 0 4px 15px rgba(0,0,0,0.1); z-index: 1;
+        }
+
+        /* RECTANGULAR IMAGE PAGE 4 */
+        .rect-photo {
+            width: 400px; height: 250px; background: #fff; border: 6px solid #fff; border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); object-fit: cover; margin-bottom: 15px;
+        }
+
+        /* HTML/CSS MYSTERY BOXES */
+        .boxes-container {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+            justify-content: center; align-items: center; margin-top: 10px; z-index: 10;
+        }
+        .gift-card { width: 150px; height: 150px; perspective: 1000px; cursor: pointer; margin: 0 auto; user-select: none; }
+        .gift-inner { width: 100%; height: 100%; transition: transform 0.6s ease-in-out; transform-style: preserve-3d; position: relative; }
+        .gift-card.flipped .gift-inner { transform: rotateY(180deg); }
+        .gift-front, .gift-back {
+            width: 100%; height: 100%; position: absolute; top: 0; left: 0; backface-visibility: hidden;
+            border-radius: 15px; display: flex; align-items: center; justify-content: center;
+            flex-direction: column; text-align: center; box-sizing: border-box; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .gift-front { background: #ff4d6d; border: 4px solid #fff; overflow: hidden; }
+        .gift-front::before { content: ''; position: absolute; width: 22%; height: 100%; background: #ffb6c1; left: 39%; }
+        .gift-front::after { content: ''; position: absolute; width: 100%; height: 22%; background: #ffb6c1; top: 39%; }
+        .gift-front span { position: relative; z-index: 2; font-size: 2.5rem; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
+        .gift-back {
+            background: #fff; color: #d6336c; transform: rotateY(180deg); border: 3px dashed #ff4d6d;
+            padding: 8px; font-size: 0.9rem; font-weight: bold; justify-content: center; overflow: hidden; 
+        }
+        .gift-image { width: 100%; height: 60%; object-fit: cover; border-radius: 8px; margin-bottom: 5px; }
+
+        /* CUSTOM POPUP ALERT */
+        .custom-alert {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6);
+            z-index: 1000; display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .custom-alert.show { opacity: 1; pointer-events: auto; }
+        .alert-box {
+            background: #ffe6ea; padding: 30px; border-radius: 20px; border: 4px dashed #ff4d6d;
+            text-align: center; max-width: 80%; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transform: scale(0.8); transition: transform 0.3s ease;
+        }
+        .custom-alert.show .alert-box { transform: scale(1); }
+        .alert-box p { font-family: 'Poppins', sans-serif; font-size: 1.3rem; color: #d6336c; font-weight: 600; margin-bottom: 20px; }
+        .alert-btn {
+            background: #ff4d6d; color: white; border: none; padding: 10px 30px; border-radius: 20px;
+            font-size: 1.1rem; font-family: 'Poppins', sans-serif; font-weight: bold; cursor: pointer; box-shadow: 0 4px 10px rgba(255, 77, 109, 0.4);
+        }
+        .alert-btn:hover { background: #d6336c; transform: scale(1.05); }
+
+        /* Navigation Buttons */
+        .nav-buttons { position: relative; margin-top: 15px; display: flex; gap: 15px; z-index: 50; }
+        button {
+            padding: 10px 25px; font-size: 1rem; font-family: 'Poppins', sans-serif; font-weight: 600;
+            color: #d6336c; background: #fff; border: none; border-radius: 30px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: all 0.3s ease;
+        }
+        button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); background: #ffe6ea; }
+
+        /* RESPONSIVE DESIGN (Mobiles) */
+        @media (max-width: 600px) {
+            h1 { font-size: 2.5rem; } .mega-title { font-size: 2rem; }
+            p.message { font-size: 0.95rem; padding: 15px; width: 95%; max-height: 45vh; }
+            .corner-photo { width: 100px; height: 100px; border-width: 2px; }
+            .decor-gif { width: 80px; } .gif-top-center { width: 110px; } .gif-bottom-center { width: 110px; }
+            .boxes-container { gap: 10px; } .gift-card { width: 120px; height: 120px; } 
+            .gift-back { font-size: 0.75rem; padding: 4px; } .gift-front span { font-size: 2rem; }
+            .nav-buttons { margin-top: 10px; }
+            .giftbox-wrapper { transform: scale(0.8); }
+            .cake-container { transform: scale(0.8); margin-top: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bgMusic" loop>
+        <source src="karan.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="funnyAlert" class="custom-alert">
+        <div class="alert-box">
+            <p>Ohhh Madam ji wants more than 1 gift... alright then! 🤭✨</p>
+            <button class="alert-btn" onclick="openRemainingBoxes()">Okay! 🎁</button>
+        </div>
+    </div>
+
+    <div class="floating-flowers">
+        <div class="flower" style="left: 10%; animation-duration: 12s; animation-delay: 0s;">🌸</div>
+        <div class="flower" style="left: 25%; animation-duration: 15s; animation-delay: 2s;">🌷</div>
+        <div class="flower" style="left: 40%; animation-duration: 10s; animation-delay: 5s;">🌷</div>
+        <div class="flower" style="left: 60%; animation-duration: 14s; animation-delay: 1s;">🌻</div>
+        <div class="flower" style="left: 75%; animation-duration: 11s; animation-delay: 3s;">🌼</div>
+        <div class="flower" style="left: 90%; animation-duration: 16s; animation-delay: 0s;">🌸</div>
+        <div class="flower" style="left: 15%; animation-duration: 13s; animation-delay: 6s;">💐</div>
+        <div class="flower" style="left: 80%; animation-duration: 12s; animation-delay: 4s;">🌷</div>
+    </div>
+
+    <div id="introPage" class="page active">
+        <h1 style="color: white; text-shadow: 2px 2px 6px rgba(0,0,0,0.3); margin-bottom: 20px; z-index: 10;">A Special Gift For You...</h1>
+        
+        <div id="confetti-container">
+            <div class="confetti" style="--tx: 150px; --ty: -300px; background: #ff7eb3;"></div>
+            <div class="confetti" style="--tx: -150px; --ty: -250px; background: #fce18a;"></div>
+            <div class="confetti" style="--tx: 80px; --ty: -400px; background: #42a5f5;"></div>
+            <div class="confetti" style="--tx: -80px; --ty: -350px; background: #a8df65;"></div>
+            <div class="confetti" style="--tx: 250px; --ty: -150px; background: #d4a5ff;"></div>
+            <div class="confetti" style="--tx: -250px; --ty: -100px; background: #ff7eb3;"></div>
+            <div class="confetti" style="--tx: 100px; --ty: -150px; background: #fce18a;"></div>
+            <div class="confetti" style="--tx: -100px; --ty: -180px; background: #42a5f5;"></div>
+            <div class="confetti" style="--tx: 180px; --ty: -250px; background: #a8df65;"></div>
+            <div class="confetti" style="--tx: -180px; --ty: -300px; background: #d4a5ff;"></div>
+            <div class="confetti" style="--tx: 30px; --ty: -250px; background: #ff7eb3;"></div>
+            <div class="confetti" style="--tx: -30px; --ty: -280px; background: #fce18a;"></div>
+        </div>
+
+        <div class="giftbox-wrapper" onclick="openGiftBox()">
+            <div class="giftbox-lid">
+                <div class="giftbox-bow">🎀</div>
+            </div>
+            <div class="giftbox-base"></div>
+            <div class="click-me-text">Tap Me! 🎁</div>
+        </div>
+    </div>
+
+    <div id="page1" class="page">
+        <img src="corner_top_left.gif" class="decor-gif gif-tl" alt="gif">
+        <img src="corner_top_right.gif" class="decor-gif gif-tr" alt="gif">
+        <img src="corner_bottom_left.gif" class="decor-gif gif-bl" alt="gif">
+        <img src="corner_bottom_right.gif" class="decor-gif gif-br" alt="gif">
+        <img src="center_top.gif" class="gif-top-center" alt="gif">
+        
+        <h1 class="mega-title" style="z-index: 10;">HAPPIIESTTT HAPPIII HAPPYYY BIRTHDAYY<br>NIMARSHHH! :3</h1>
+        
+        <p class="message" style="background: rgba(255,255,255,0.7); box-shadow: none; font-weight: 600; color: #d6336c; text-align: center;">
+            Wishing the sweetest girl the sweetest birthday! 🎀✨🌷🌸
+        </p>
+
+        <img src="center_bottom.gif" class="gif-bottom-center" alt="gif">
+
+        <div class="nav-buttons">
+            <button onclick="goToPage('page1', 'pageCake')">Next ➔</button>
+        </div>
+    </div>
+
+    <div id="pageCake" class="page">
+        <h1>Here's your virtual cake<br>it's calorie-free but full of love.<br>Blow your candles and make a wish</h1>
+        
+        <div class="mic-instruction" id="micInstruction">🌬️ Blow into your microphone to put them out! 🌬️</div>
+
+        <div class="cake-container" onclick="blowCandlesFallback()">
+            <div class="cake-plate"></div>
+            
+            <div class="cake-tier cake-tier-main">
+                <div class="piping-top"></div>
+                <div class="cake-ribbon"></div>
+                <div class="cake-bow">🎀</div>
+                
+                <div style="position: absolute; top: 25px; left: 15px; font-size: 1.5rem; transform: rotate(-20deg);">🦋</div>
+                <div style="position: absolute; top: 25px; right: 15px; font-size: 1.5rem; transform: rotate(20deg);">🦋</div>
+                
+                <div class="piping-bottom"></div>
+            </div>
+            
+            <div class="number-candles-wrapper">
+                <div class="num-candle">
+                    1<div class="flame"></div>
+                </div>
+                <div class="num-candle">
+                    8<div class="flame"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button id="fallbackBtn" style="display:none;" onclick="blowCandlesFallback()">Click Here to Blow Out</button>
+        </div>
+    </div>
+
+    <div id="page2" class="page">
+        <img class="corner-photo gif-tl" src="pic1.jpg" alt="Picture 1">
+        <img class="corner-photo gif-tr" src="pic2.jpg" alt="Picture 2">
+        <img class="corner-photo gif-bl" src="pic3.jpg" alt="Picture 3">
+        <img class="corner-photo gif-br" src="pic4.jpg" alt="Picture 4">
+        
+        <h1 style="margin-top: 0;">A special message to my Madam Ji! 🎈</h1>
+        
+        <p class="message" style="text-align: left; margin: 10px 0;">
+            Happpyyyy birthdayyyyy nimarshhh lmao feels new calling by your name. Anyways Hope ya haveee a greattttt greattttt year aheaddddd and wishing yaaa the bestttt 
+So where do we start, it's been more than 5 years time just flew away ong and yeah in these 5 years we did have ups n downs lmao but ye somehow we still in touch (ofc by me) and ye hopefully another year will be added. Have a great life ahead great academic year and everything you want you will achieve it and I'm sure you will be happy the whole time so dw ab anything and enjoy your life to the fullest and i love you :3 ye ik u alr know but I'll say it again n again Oki i love you, enof yapping next page will be peak so yea happii birthdayy again not only this birthday but the upcoming ones and everything in ur life will be Peakkkkk asff. Now don't ask me why every year I fall for you more n more and idk don't question me SILENCE 😭✌️ Anyways this is your day so enjoy it to the fullesttttt it'll be the best day for u trust
+        </p>
+
+        <div class="nav-buttons">
+            <button onclick="goToPage('page2', 'page3')">Next ➔</button>
+        </div>
+    </div>
+
+    <div id="page3" class="page">
+        <h1 style="margin-bottom: 0;">Open Your Gifts! 🎁</h1>
+        <p style="font-size: 1.2rem; margin-bottom: 5px; color: white; text-shadow: 1px 1px 3px rgba(0,0,0,0.5);">Click a box to reveal what's inside ✨</p>
+        
+        <div class="boxes-container">
+            <div class="gift-card" onclick="flipBox(this)">
+                <div class="gift-inner">
+                    <div class="gift-front"><span>🎀</span></div>
+                    <div class="gift-back">
+                        <img src="gift1_jhumkas.jpg" class="gift-image" alt="Gift">
+                        <span>Jhumkas & Bangles</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gift-card" onclick="flipBox(this)">
+                <div class="gift-inner">
+                    <div class="gift-front"><span>🎀</span></div>
+                    <div class="gift-back">
+                        <img src="gift2_makeup.jpg" class="gift-image" alt="Gift">
+                        <span>Makeup Set</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gift-card" onclick="flipBox(this)">
+                <div class="gift-inner">
+                    <div class="gift-front"><span>🎀</span></div>
+                    <div class="gift-back">
+                        <img src="gift3_jewellery.jpg" class="gift-image" alt="Gift">
+                        <span>Jewellery Set</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gift-card" onclick="flipBox(this)">
+                <div class="gift-inner">
+                    <div class="gift-front"><span>🎀</span></div>
+                    <div class="gift-back">
+                        <img src="gift4_you.jpg" class="gift-image" alt="Gift">
+                        <span style="font-size: 0.85rem; line-height: 1.2;">All of the above<br>but if you own me :3</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <button onclick="goToPage('page3', 'page2')">⬅ Previous</button>
+            <button onclick="goToPage('page3', 'page4')">Next ➔</button>
+        </div>
+    </div>
+
+    <div id="page4" class="page">
+        <img class="rect-photo" src="final_pic.jpg" alt="Final Picture">
+        
+        <h1 style="font-size: 3.5rem; margin: 5px 0;">To sum it up...</h1>
+        
+        <p class="message" style="margin-top: 10px; text-align: center;">
+            Hmmmm so to sum it up HAPPII BIRTHDAYYY AGAIN :>  I AINT GOING ANYWHERE UNTIL I HAV A CHANCE 🗣️🔥🔥🔥 SO YE GET READY FOR ANOTHER YEAR OF TORTURE FROM ME😹✌️
+Mainu neend na aave raatan nu,
+Teriyan udeekan rehndiyan ne 😋 
+Akhan teriyan ne gallan kitiyan,
+Mainu sab samajh aa gaya🙂‍↕️ 
+YEAH no don't question me now ngl need to compliment ur eyes more fr 
+Anyways that's all ik it's a simple ahh website but yeah maybe who knows when I get good I'll build a better one if someone gives me a chance 🥰 alr Happii happii birthdayy again and i love you 💕
+        </p>
+
+        <div class="nav-buttons">
+            <button onclick="goToPage('page4', 'page3')">⬅ Previous</button>
+        </div>
+    </div>
+
+    <script>
+        let musicStarted = false;
+        let flippedBoxesCount = 0;
+        let alertShown = false;
+        let cakeBlown = false;
+        let audioStream = null;
+
+        function playMusic() {
+            if (!musicStarted) {
+                document.getElementById("bgMusic").play();
+                musicStarted = true;
+            }
+        }
+
+        // Universal Navigation Function
+        function goToPage(fromPageId, toPageId) {
+            playMusic();
+            document.getElementById(fromPageId).classList.remove('active');
+            document.getElementById(toPageId).classList.add('active');
+
+            if(toPageId === 'pageCake') {
+                startMic();
+            }
+        }
+
+        // BIRTHDAY BOX LOGIC (Intro)
+        function openGiftBox() {
+            playMusic(); 
+            const wrapper = document.querySelector('.giftbox-wrapper');
+            if (wrapper.classList.contains('open')) return; 
+            
+            wrapper.classList.add('open');
+            document.getElementById('confetti-container').style.display = 'block';
+            setTimeout(() => { goToPage('introPage', 'page1'); }, 2800); 
+        }
+
+        // MICROPHONE LOGIC (Blow to extinguish)
+        function startMic() {
+            if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ audio: true })
+                .then(function(stream) {
+                    audioStream = stream;
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const analyser = audioContext.createAnalyser();
+                    const microphone = audioContext.createMediaStreamSource(stream);
+                    microphone.connect(analyser);
+                    analyser.fftSize = 256;
+                    const bufferLength = analyser.frequencyBinCount;
+                    const dataArray = new Uint8Array(bufferLength);
+
+                    function checkVolume() {
+                        if (cakeBlown) return; 
+                        
+                        analyser.getByteFrequencyData(dataArray);
+                        let sum = 0;
+                        for(let i = 0; i < bufferLength; i++) { sum += dataArray[i]; }
+                        let average = sum / bufferLength;
+
+                        if (average > 60) { 
+                            blowCandlesFallback(); 
+                        } else {
+                            requestAnimationFrame(checkVolume); 
+                        }
+                    }
+                    checkVolume();
+                })
+                .catch(function(err) {
+                    document.getElementById('micInstruction').innerHTML = "Tap the cake to put the candles out! ✨";
+                    document.getElementById('fallbackBtn').style.display = "inline-block";
+                });
+            } else {
+                document.getElementById('micInstruction').innerHTML = "Tap the cake to put the candles out! ✨";
+                document.getElementById('fallbackBtn').style.display = "inline-block";
+            }
+        }
+
+        // VIRTUAL CAKE LOGIC (Blow or Click)
+        function blowCandlesFallback() {
+            if(cakeBlown) return; 
+            cakeBlown = true;
+            playMusic();
+            
+            if(audioStream) { audioStream.getTracks().forEach(track => track.stop()); }
+
+            const flames = document.querySelectorAll('.flame');
+            flames.forEach(flame => flame.classList.add('blown'));
+
+            shootMassiveConfetti();
+
+            setTimeout(() => {
+                goToPage('pageCake', 'page2');
+            }, 3500);
+        }
+
+        function shootMassiveConfetti() {
+            const colors = ['#ff7eb3', '#fce18a', '#42a5f5', '#a8df65', '#d4a5ff', '#ff3366', '#ffffff'];
+            for(let i = 0; i < 150; i++) {
+                let conf = document.createElement('div');
+                conf.classList.add('cake-confetti-piece');
+                conf.style.left = (Math.random() * 100) + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                conf.style.animationDelay = (Math.random() * 0.8) + 's'; 
+                document.body.appendChild(conf);
+            }
+        }
+
+        // MYSTERY BOXES (Page 3)
+        function flipBox(element) {
+            playMusic(); 
+            if (element.classList.contains('flipped') || alertShown) { return; }
+
+            if (flippedBoxesCount === 0) {
+                element.classList.add('flipped');
+                flippedBoxesCount++;
+            } else if (flippedBoxesCount === 1) {
+                alertShown = true;
+                document.getElementById('funnyAlert').classList.add('show');
+            }
+        }
+
+        function openRemainingBoxes() {
+            document.getElementById('funnyAlert').classList.remove('show');
+            let allBoxes = document.querySelectorAll('.gift-card');
+            allBoxes.forEach((box, index) => {
+                if (!box.classList.contains('flipped')) {
+                    setTimeout(() => { box.classList.add('flipped'); }, index * 300);
+                }
+            });
+            flippedBoxesCount = 4; 
+            alertShown = false;
+        }
+    </script>
+</body>
+</html>
